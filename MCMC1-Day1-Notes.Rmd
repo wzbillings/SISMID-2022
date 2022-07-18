@@ -1,0 +1,17 @@
+---
+title: "MCMC1 Notes"
+author: "Zane"
+date: "2022-07-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Day 1
+
+* $p(y)$, the marginal distribution of $y$, is quite difficult to evaluate (even numerically) in high-dimensional cases. The focus of MCMC is then to compute Bayesian models without evaluating this integral.
+* Conjugate prior: the prior has the same parametric form as the posterior distribution. Beta is conjugate for a binomial likelihood, and gamma is conjugate for a Poisson likelihood.
+* Nonconjugate and weakly informative or flat priors can also be used but can be more computationally demanding.
+* Posterior mean always lies between the prior mean and the sample mean for the chain binomial model (is this always true?).
