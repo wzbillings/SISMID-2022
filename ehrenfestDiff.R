@@ -1,39 +1,61 @@
-## This script illustrates the ergodic theorem using the Ehrenfest model of diffusion
+## This script illustrates the ergodic theorem using the Ehrenfest model of
+## diffusion
 ## Author: Vladimir N. Minin
 ## last update: 07/17/2022
+## Updated by Zane Billings 2022-07-19
 
 #' Generate the next state of the Ehrenfest diffusion model
 #'
 #' @param cur_state Current state of the Ehrenfest diffusion model
-#' @param num_mol Total number of moleculers in the Ehrenfest diffusion model
+#' @param num_mols Total number of molecules in the Ehrenfest diffusion model
 #'
-#' @return an integer that is either (cur_state+1) or (cur_state-1)
+#' @return a numeric of length 1 that is either (cur_state+1) or (cur_state-1)
 #'
 #' @examples
 #' next_state(32, 1000)
-
-
-
-next_state = function(prev_state, N){
+next_state = function(cur_state, num_mols){
 	X_n <- sample(
-		x = c(prev_state - 1, prev_state + 1),
+		x = c(cur_state - 1, cur_state + 1),
 		size = 1,
-		prob = c(prev_state / N, 1 - prev_state / N)
+		prob = c(cur_state / num_mols, 1 - cur_state / num_mols)
 	)
 	
+	# Another way to do it
+	# X_n <- ifelse(
+	# 	runif(1) < (cur_state / num_mols),
+	# 	cur_state - 1,
+	# 	cur_state + 1
+	# )
+
 	## this function randomly draws a new state of the Ehrenfest model
 	## One of your tasks is to finish writing this function
 	return(X_n)
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## set the number of molecules and the number of iterations
 my_num_mol = 100
-sim_size = 10000
+sim_size = 100000
 
 set.seed(1234)
-## initialize the chain by drawing the initial state uniformly at random from all possible states. R function `sample()' will be handy.
+## initialize the chain by drawing the initial state uniformly at random from
+# all possible states. R function `sample()' will be handy.
 my_draws = numeric(sim_size)
-my_draws[1] = sample(x = 1:my_num_mol, size = 1)
+my_draws[1] = sample(x = 1:my_num_mol, size = 1L)
 
 ## run the Markov chain
 for (i in 2:sim_size){

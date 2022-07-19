@@ -15,3 +15,12 @@ knitr::opts_chunk$set(echo = TRUE)
 * Conjugate prior: the prior has the same parametric form as the posterior distribution. Beta is conjugate for a binomial likelihood, and gamma is conjugate for a Poisson likelihood.
 * Nonconjugate and weakly informative or flat priors can also be used but can be more computationally demanding.
 * Posterior mean always lies between the prior mean and the sample mean for the chain binomial model (is this always true?).
+
+# Day 2
+
+* For MCMC methods, the convergence rate is $\frac{1}{\sqrt{n}}$, where $n$ is the ESS
+* The general idea of MCMC is to design a markov chain with a stationary distribution that this is the same as our target distribution (the distribution of a parameter of interest). Then, the ergodic theorem ensures that the mean of the chain runs will converge to the true mean.
+* the MH algorithm tends to move towards areas of higher density, as a higher density will give an acceptance probability of 1. So areas of high density are moved towards more frequently.
+* If both the normalizing constant integral is intractable and the likelihood is also intractable, these distributions are called doubly-intractable and there is currently not a satisfactory answer to these problems.
+* So long as the constructed markov chain is irreducible, the ergodic theorem holds (other conditions hold as well). This depends on the successful construction of a proposal.
+* A Gibbs sampler is a smart way of creating metropolis-hastings proposals that guarantees that the acceptance probably will be one. We combine several markov kernels with the same target distributions, which results in an overall well-behaved markov chain with the same target distribution.
