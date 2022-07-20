@@ -17,8 +17,8 @@
 #'
 #' @examples
 #' sis_log_like(0.4, 0.1, 2.2, 1.0)
-sis_log_like = function(inf_time, inf_rate, clear_rate, total_time){
-  return(log(inf_rate) - inf_rate*inf_time - clear_rate*(total_time-inf_time))
+sis_log_like <- function(inf_time, inf_rate, clear_rate, total_time){
+	return(log(inf_rate) - inf_rate*inf_time - clear_rate*(total_time-inf_time))
 }
 
 #' Compute log-likelihood of the disease trajectory of an individual who starts
@@ -34,20 +34,19 @@ sis_log_like = function(inf_time, inf_rate, clear_rate, total_time){
 #'
 #' @examples
 #' sis_proposal(0.4, 1.0, 1.5)
-sis_proposal = function(cur_inf_time, total_time, win_half_len){
-  # finish this function
-  
-  new_inf_time = 0 ## replace with the proper proposal
-  
-  u <- runif(1, cur_inf_time - win_half_len, cur_inf_time + win_half_len)
-  new_inf_time <-
-  	dplyr::case_when(
-  		0 < u < total_time ~ u,
-  		u > total_time ~ 2*total_time - u,
-  		u < 0 ~ -u
-  	)
-  
-  return(new_inf_time)
+sis_proposal <- function(cur_inf_time, total_time, win_half_len){
+	# finish this function
+
+	u <- cur_inf_time + runif(1, -win_half_len, win_half_len)
+	if (u > total_time) {
+		new_inf_time <- 2 * total_time - u
+	} else if (u < 0) {
+		new_inf_time <- -u
+	} else {
+		new_inf_time <- u
+	}
+	
+	return(new_inf_time)
 }
 
 #' Run MCMC to approximate the posterior distribution of the infection time
@@ -67,39 +66,66 @@ sis_proposal = function(cur_inf_time, total_time, win_half_len){
 #' @examples
 #' inf_time_mcmc(start_inf_time=0.1, inf_rate=0.2, clear_rate=2, total_time=1.0,
 #' win_half_len=0.2, chain_len=10000)
-inf_time_mcmc = function(start_inf_time,
+inf_time_mcmc <- function(start_inf_time,
 												 inf_rate,
 												 clear_rate,
 												 total_time,
 												 win_half_len,
 												 chain_len) {
 	
-  result_mat = matrix(0, chain_len, 3)
-  colnames(result_mat) = c("inf_time", "log_like", "acc_ind")
-  
-  cur_inf_time = start_inf_time
-  result_mat[1,1] = start_inf_time
-  result_mat[1, 2] = sis_log_like(start_inf_time, inf_rate, clear_rate,
-  																total_time)
-  
-  for (i in 2:chain_len){
-    ## 1. Generate a new value of the infection time using 
-    ##  the function sis_proposal()
-    ## 2. Decide whether to accept or reject the proposed value by computing
-    ## the Metropolis-Hastings ratio
-    ## 3. Save the current or proposed value in result_mat[i,1]
-    ##    Save the complete-data log-likelihood evaluated either at the current
-    ##    or proposed value of the infection time in result_mat[i,2]
-    ##    Save the indicator of the acceptance in result_mat[i,3]
-  	met_prop <- sis_proposal(cur_inf_time, )
-  }
-  
-  return(result_mat)
+	result_mat = matrix(0, chain_len, 3)
+	colnames(result_mat) = c("inf_time", "log_like", "acc_ind")
+	
+	cur_inf_time = start_inf_time
+	result_mat[1,1] = start_inf_time
+	result_mat[1, 2] = sis_log_like(start_inf_time, inf_rate, clear_rate,
+																	total_time)
+	
+	for (i in 2:chain_len){
+		## 1. Generate a new value of the infection time using 
+		##  the function sis_proposal()
+		prop_inf_time <- sis_proposal(cur_inf_time, total_time, win_half_len)
+		
+		## 2. Decide whether to accept or reject the proposed value by computing
+		## the Metropolis-Hastings ratio
+		MH_log_ratio <-
+			sis_log_like(prop_inf_time, inf_rate, clear_rate, total_time) -
+			sis_log_like(cur_inf_time,  inf_rate, clear_rate, total_time)
+		
+		## 3. Save the current or proposed value in result_mat[i,1]
+		##    Save the complete-data log-likelihood evaluated either at the current
+		##    or proposed value of the infection time in result_mat[i,2]
+		##    Save the indicator of the acceptance in result_mat[i,3]
+		if (log(runif(1, 0, 1)) < MH_log_ratio) {
+			result_mat[i, 1] <- prop_inf_time
+			result_mat[i, 2] <- sis_log_like(prop_inf_time,
+																			 inf_rate,
+																			 clear_rate,
+																			 total_time)
+			result_mat[i, 3] <- 1
+			cur_inf_time <- prop_inf_time
+		} else {
+			result_mat[i, 1] <- cur_inf_time
+			# Reference previous value so we don't have to recalculate the likelihood
+			result_mat[i, 2] <- result_mat[i - 1, 2]
+			# Matrix is filled with zeros so dont need to assign [i, 3]
+		}
+		
+	}
+	
+	return(result_mat)
 }
 
 
 ## run the above functions
-test_sample = inf_time_mcmc(start_inf_time=0.1, inf_rate=0.1, clear_rate=0.2, total_time=1.0, win_half_len=0.2, chain_len=10000)
+test_sample = inf_time_mcmc(
+	start_inf_time = 0.1,
+	inf_rate = 0.1,
+	clear_rate = 0.1,
+	total_time = 1.0,
+	win_half_len = 0.2,
+	chain_len = 10000
+)
 
 summary(test_sample[1000:10000,])
 
