@@ -24,3 +24,12 @@ knitr::opts_chunk$set(echo = TRUE)
 * If both the normalizing constant integral is intractable and the likelihood is also intractable, these distributions are called doubly-intractable and there is currently not a satisfactory answer to these problems.
 * So long as the constructed markov chain is irreducible, the ergodic theorem holds (other conditions hold as well). This depends on the successful construction of a proposal.
 * A Gibbs sampler is a smart way of creating metropolis-hastings proposals that guarantees that the acceptance probably will be one. We combine several markov kernels with the same target distributions, which results in an overall well-behaved markov chain with the same target distribution.
+
+# Day 3
+
+* Posterior predictive check:
+	1. Draw an MCMC sample theta_k from the posterior of the parameters
+	2. With this theta_k, draw a sample y_pred from f(y_pred | theta_k),
+	the likelihood function.
+	3. Repeat steps 1 and 2 (k = 1, ..., K) times.
+* See Kari's chain binomial slides for example of PostPC.

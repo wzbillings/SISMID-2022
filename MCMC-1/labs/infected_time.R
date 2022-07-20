@@ -116,7 +116,7 @@ inf_time_mcmc <- function(start_inf_time,
 	return(result_mat)
 }
 
-
+set.seed(370)
 ## run the above functions
 test_sample = inf_time_mcmc(
 	start_inf_time = 0.1,
@@ -124,10 +124,10 @@ test_sample = inf_time_mcmc(
 	clear_rate = 0.1,
 	total_time = 1.0,
 	win_half_len = 0.2,
-	chain_len = 10000
+	chain_len = 11000
 )
 
-summary(test_sample[1000:10000,])
+summary(test_sample[1000:11000,])
 
-hist(test_sample[1000:10000,1])
+hist(test_sample[1000:11000,1], breaks = 100)
 

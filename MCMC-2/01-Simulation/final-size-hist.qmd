@@ -1,0 +1,195 @@
+---
+title: "Lab 01 - Simulation"
+author: "Zane Billings"
+format: html
+---
+
+```{r setup}
+#| include: FALSE
+
+library(ggplot2)
+```
+
+
+# SIR Markov model
+
+The first model is an SIR Markov model, which assumes $1$ initial infective and
+$N - 1$ initial susceptibles. The per-person infection rate is $\beta / N$.
+
+```{r}
+simSIR.Markov <- function(N, beta, gamma) {
+	# initial number of infectives and susceptibles;
+	I <- 1
+	S <- N-1;
+	
+	# recording time;
+	t <- 0;
+	times <- c(t);
+	
+	# a vector which records the type of event (1=infection, 2=removal)
+	type <- c(1);
+	
+	while (I > 0) {
+		
+		# time to next event;
+		t <- t + rexp(1, (beta/N)*I*S + gamma*I);
+		times <- append(times, t);
+		
+		if (runif(1) < beta*S/(beta*S + N*gamma)) {
+			# infection
+			I <- I+1;
+			S <- S-1;
+			type <- append(type, 1);
+		}
+		else {
+			#removal
+			I <- I-1
+			type <- append(type, 2);
+		}
+	}
+	
+	# record the final size , i.e. the number of initial susceptlbles who contracted the disease sometime during the epidemic.
+	final_size <- sum(type == 1)
+	
+	# record the times of events (infections/removals) as well as the type
+	res <- list("t"=times, "type"=type, "duration" = t,
+							"final_size" = final_size);
+	res
+}
+
+res_markov <-
+	tidyr::expand_grid(
+		beta = c(0.5, 1, 2, 4),
+		gamma = c(0.5, 1, 2, 4)
+	) |>
+	dplyr::rowwise() |>
+	dplyr::mutate(
+		sim = list(
+			purrr::map_dfr(
+				1:10000,
+				~simSIR.Markov(100, beta, gamma)[c("duration", "final_size")]
+			)
+		)
+	) |>
+	tidyr::unnest(sim)
+
+ggplot(res_markov, aes(x = final_size)) +
+	geom_histogram(binwidth = 3, boundary = 0.5, col = "black", fill = "white",
+								 aes(y = after_stat(density))) +
+	facet_grid(beta ~ gamma, labeller = "label_both") +
+	theme_minimal(base_size = 16) +
+	labs(
+		title = "SIR markov model (n = 100)",
+		x = "final epidemic size"
+	)
+
+ggplot(res_markov, aes(x = duration)) +
+	geom_histogram(binwidth = 3, boundary = 0.5, col = "black", fill = "white",
+								 aes(y = after_stat(density))) +
+	facet_grid(beta ~ gamma, labeller = "label_both") +
+	theme_minimal(base_size = 16) +
+	labs(
+		title = "SIR markov model (n = 100)",
+		x = "duration"
+	)
+```
+
+# Alternative SIR markov model
+
+```{r}
+simSIR.Markov.alternative <- function(N, beta, gamma) {
+
+  # initial number of infectives and susceptibles;
+  I <- 1
+  S <- N-1;
+
+  # recording time;
+  t <- 0;
+  times <- c(t);
+
+  # a vector which records the type of event (1=infection, 2=removal)
+  type <- c(1);
+
+  while (I > 0) {
+
+    ############################################
+    # simulate times to the next possible events
+    ############################################
+    
+    # time to next infection
+    if (S > 0) {
+      t.next.infection <- t +  rexp(1, (beta/N)*I*S)
+    }
+    else {
+      t.next.infection <- Inf;
+    }
+    
+    # time to next removal    
+    t.next.removal <- t + rexp(1, gamma*I)
+
+
+    # check which of the two events happens first
+    if (t.next.infection < t.next.removal) {
+      # infection occurs
+      I <- I+1;
+      S <- S-1;
+      type <- append(type, 1);
+      times <- append(times, t.next.infection);
+      t <- t.next.infection
+    }
+    else {
+      #removal occurs
+      I <- I-1
+      times <- append(times, t.next.removal);
+      type <- append(type, 2);
+      t <- t.next.removal
+    }
+  }
+  
+  # record the final size , i.e. the number of initial susceptlbles who contracted the disease sometime during the epidemic.
+	final_size <- sum(type == 1)
+  
+  # record the times of events (infections/removals) as well as the type
+  #
+  #
+  res <- list("t"=times, "type"=type, "duration" = t, "final_size" = final_size);
+  res
+}
+
+res_markov_alt <-
+	tidyr::expand_grid(
+		beta = c(0.5, 1, 2, 4),
+		gamma = c(0.5, 1, 2, 4)
+	) |>
+	dplyr::rowwise() |>
+	dplyr::mutate(
+		sim = list(
+			purrr::map_dfr(
+				1:1000,
+				~simSIR.Markov.alternative(1000, beta, gamma)[c("duration", "final_size")]
+			)
+		)
+	) |>
+	tidyr::unnest(sim)
+
+ggplot(res_markov_alt, aes(x = final_size)) +
+	geom_histogram(binwidth = 1, boundary = 0.5, col = "black", fill = "white",
+								 aes(y = after_stat(density))) +
+	facet_grid(beta ~ gamma, labeller = "label_both") +
+	theme_minimal(base_size = 16) +
+	labs(
+		title = "SIR markov model (alternate)",
+		x = "final epidemic size"
+	)
+
+ggplot(res_markov_alt, aes(x = duration)) +
+	geom_histogram(binwidth = 1, boundary = 0.5, col = "black", fill = "white",
+								 aes(y = after_stat(density))) +
+	facet_grid(beta ~ gamma, labeller = "label_both") +
+	theme_minimal(base_size = 16) +
+	labs(
+		title = "SIR markov model (alternate)",
+		x = "final epidemic size"
+	)
+```
+
