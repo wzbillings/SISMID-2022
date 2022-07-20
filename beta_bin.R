@@ -96,14 +96,21 @@ log_posterior = function(my_alpha,
 #'   alpha
 #'
 #' @examples log_alpha_posterior(1.1, 1.2, rep(0.1,71), rat_data, 71, 0.1)
-log_alpha_posterior = function(my_alpha, my_beta, theta_vec, my_data, sample_size, prior_rate){
-  ## contribution of alpha densities
-  beta_dens_bit = sample_size*(lgamma(my_alpha+my_beta)-lgamma(my_alpha))+sum((my_data$x+my_alpha-1)*log(theta_vec))
-
-  ## contribution of the prior
-  prior_bit = -prior_rate*my_alpha
-
-  return(beta_dens_bit+prior_bit)
+log_alpha_posterior = function(my_alpha,
+															 my_beta,
+															 theta_vec,
+															 my_data,
+															 sample_size,
+															 prior_rate) {
+	## contribution of alpha densities
+	beta_dens_bit = sample_size *
+		(lgamma(my_alpha + my_beta) - lgamma(my_alpha)) +
+		sum((my_data$x + my_alpha - 1) * log(theta_vec))
+	
+	## contribution of the prior
+	prior_bit = -prior_rate * my_alpha
+	
+	return(beta_dens_bit + prior_bit)
 }
 
 #' Compute the sum the log-posterior terms that depend on the hyperparameter
@@ -128,14 +135,21 @@ log_alpha_posterior = function(my_alpha, my_beta, theta_vec, my_data, sample_siz
 #'   beta
 #'
 #' @examples log_beta_posterior(1.1, 1.2, rep(0.1,71), rat_data, 71, 0.1)
-log_beta_posterior = function(my_alpha, my_beta, theta_vec, my_data, sample_size, prior_rate){
-  ## contribution of beta densities
-  beta_dens_bit = sample_size*(lgamma(my_alpha+my_beta)-lgamma(my_beta))+ sum((my_data$n-my_data$x+my_beta-1)*log(1-theta_vec))
-
-  ## contribution of the prior
-  prior_bit = -prior_rate*my_beta
-
-  return(beta_dens_bit+prior_bit)
+log_beta_posterior = function(my_alpha,
+															my_beta,
+															theta_vec,
+															my_data,
+															sample_size,
+															prior_rate) {
+	## contribution of beta densities
+	beta_dens_bit = sample_size *
+		(lgamma(my_alpha + my_beta) - lgamma(my_beta)) +
+		sum((my_data$n - my_data$x + my_beta - 1) * log(1 - theta_vec))
+	
+	## contribution of the prior
+	prior_bit = -prior_rate * my_beta
+	
+	return(beta_dens_bit + prior_bit)
 }
 
 #' Run MCMC to approximate the posterior distribution of success probabilities
@@ -202,17 +216,66 @@ mcmc_sampler = function(my_data,
 		cur_beta_acc = 0
 		
 		## Gibbs step for the components of theta
-		## TO DO: IMPLEMENT GIBSS STEP HERE
 		# These are updated all in one step -- see gibbs notes
-		cur_theta = rbeta(data_sample_size, my_data$x + cur_alpha, my_data$n - my_data$x + cur_beta)
+		cur_theta = rbeta(
+			data_sample_size,
+			my_data$x + cur_alpha,
+			my_data$n - my_data$x + cur_beta
+		)
 		
 		## Metropolis step for alpha
-		## TO DO: IMPLEMENT M-H STEP HERE FOR ALPHA
+		# Propose a new value of alpha
+		new_alpha <- propose_pospar(cur_alpha, runif(1, 0, 1), tuning_alpha)
+		
+		# Get the MH acceptance probability
+		# The MH acceptance probability is
+		# a_new_old <- pi_new / pi_old * q(old | new) / q(new | old) (or 1 if 
+		# it is greater than 1).
+		# On the log scale this works out to be
+		# log(pi_new) + log_q(old | new) - (log(pi_old) + log_q(new | old))
+		# log(pi_new) - log(pi_old) + log_q(old | new) - log_q(new | old)
+		MH_ratio_alpha <-
+			log_alpha_posterior(
+				new_alpha, cur_beta, cur_theta, my_data, data_sample_size,
+				prior_rate_alpha
+			) -
+			log_alpha_posterior(
+				cur_alpha, cur_beta, cur_theta, my_data, data_sample_size,
+				prior_rate_alpha
+			) +
+			log_prop_dens(cur_alpha) -
+			log_prop_dens(new_alpha)
+		
+		# Check for acceptance and update variables
+		if (runif(1) < min(MH_ratio_alpha, 1)) {
+			cur_alpha <- new_alpha
+			cur_alpha_acc <- 1
+		}
 		
 		## Metropolis step for beta
-		## TO DO: IMPLEMENT M-H STEP HERE FOR BETA
-		new_beta <- propose_pospar(cur_beta)
+		# Propose a new value of beta
+		new_beta <- propose_pospar(cur_beta, runif(1, 0, 1), tuning_beta)
 		
+		# Calculate the MH acceptance probability
+		MH_ratio_beta <-
+			log_beta_posterior(
+				cur_alpha, new_beta, cur_theta, my_data, data_sample_size,
+				prior_rate_beta
+			) -
+			log_beta_posterior(
+				cur_alpha, cur_beta, cur_theta, my_data, data_sample_size,
+				prior_rate_beta
+				) +
+			log_prop_dens(cur_beta) -
+			log_prop_dens(new_beta)
+		
+		# Check for acceptance and update variables
+		if (runif(1) < min(MH_ratio_beta, 1)) {
+			cur_beta <- new_beta
+			cur_beta_acc <- 1
+		}
+		
+		# Save results after burn-in [hase]
 		if (i > mcmc_burnin) {
 			step_count = step_count + 1
 			
