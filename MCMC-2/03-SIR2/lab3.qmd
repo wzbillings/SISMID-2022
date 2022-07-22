@@ -1,0 +1,61 @@
+---
+title: "Lab 3"
+format: html
+---
+
+```{r setup}
+#| setup: false
+```
+
+# Model background
+
+# Exercise 1
+
+```{r}
+source(here::here("MCMC-2", "03-SIR2", "coding.R"))
+source(here::here("MCMC-2", "03-SIR2", "mcmc-Markov.R"))
+print(mcmcSIR.Markov)
+```
+
+# Exercise 2
+
+Reading the data.
+
+```{r}
+dat <- read.table(here::here("MCMC-2", "03-SIR2", "data.txt"), header=TRUE)
+```
+
+```{r}
+head(dat)
+```
+
+# Exercise 3
+
+We want to fit a non-Markov SIR model where we assume that
+$$R_i - I_i \sim \mathrm{Gamma}(\alpha, \gamma).$$
+Then, 
+$$E[R_i - I_i] = \alpha / \gamma.$$
+The parameter $\alpha$ is treated as fixed and known, but we assume that $\beta$ and $\gamma$ are random, as described above.
+
+Then, the unnormalized posterior density of interest is
+$$\pi(\beta, \gamma, \mathbf{I} \mid \mathbf{R}) \propto \pi(\mathbf{I}, \mathbf{R} \mid \beta, \gamma) \pi(\beta)\pi(\gamma),$$
+which is
+$$whatever.$$
+
+Then, the full conditional distributions are 
+$$\pi(\beta \mid \gamma, \mathbf{I}, \mathbf{R}) = something;$$
+$$\pi(\gamma \mid \beta, \mathbf{R}, \mathbf{R}) = something;$$
+and
+$$\pi(\mathbf{I}\mid \gamma, \beta, \mathbf{R}) = something.$$
+
+# Exercise 4
+
+We will write a function in R that will draw samples from $\pi(\beta, \gamma, \mathbf{I} \mid \mathbf{R})$ using MCMC.
+
+```{r}
+mcmcSIR_gamma <- function() {
+	
+}
+```
+
+

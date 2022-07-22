@@ -1,0 +1,29 @@
+---
+title: "Lab 2: SIR Models (1)"
+format: html
+---
+
+```{r setup}
+#| include: false
+```
+
+# Exercise 1
+
+Assume that $\alpha$ and $\beta$ are *a priori* independent such that $\alpha \sim \mathrm{Gamma}(\lambda_\alpha, \nu_\alpha)$ and $\beta \sim \mathrm{Gamma}(\lambda_\beta, \nu_\beta)$. The data are independent draws from a gamma distribution with parameters $\alpha$ and $\beta$, i.e.
+$$y_i \stackrel{\text{i.i.d}}{\sim} \mathrm{Gamma}(\alpha, \beta), \quad i = 1, \ldots, n.$$
+Then, the posterior density of interest is
+$$\pi(\alpha, \beta \mid y) \propto \pi(y\mid \alpha,\beta)\pi(\alpha)\pi(\beta)$$
+and thus
+$$\pi(\alpha, \beta \mid y) \propto \left( y^{\alpha - 1}e^{-\beta y} \right) \left( \beta^{\lambda_\beta - 1}e^{-\nu_\beta \beta} \right) \left(  \alpha^{\lambda_\alpha - 1}e^{-\nu_\alpha\alpha} \right).$$
+
+# Exercise 2
+
+Now we see that the full conditional densities of $\alpha$ and $\beta$ are
+
+
+
+
+
+
+
+
