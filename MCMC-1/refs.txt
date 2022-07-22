@@ -1,0 +1,5 @@
+A.A. Johnson, M. Ott, M. Dogucu. Bayes Rules! An Introduction to Bayesian Modeling with R, 2022.
+C.P. Robert and G. Casella. Monte Carlo statistical methods, 2nd edition, Springer-Verlag, 2004.
+C.P. Robert and G. Casella. Introducing Monte Carlo methods with R, Springer-Verlag, 2009. (a more hands-on version of the first book by the same authors)
+J. Albert. Bayesian computation with R, 2nd edition, Springer-Verlag, 2009.
+P. Brémaud. Markov chains: Gibbs fields, Monte Carlo simulation, and queues, Springer-Verlag, 1999.

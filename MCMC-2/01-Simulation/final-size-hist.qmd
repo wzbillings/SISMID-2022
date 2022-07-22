@@ -165,15 +165,15 @@ res_markov_alt <-
 	dplyr::mutate(
 		sim = list(
 			purrr::map_dfr(
-				1:1000,
-				~simSIR.Markov.alternative(1000, beta, gamma)[c("duration", "final_size")]
+				1:10000,
+				~simSIR.Markov.alternative(100, beta, gamma)[c("duration", "final_size")]
 			)
 		)
 	) |>
 	tidyr::unnest(sim)
 
 ggplot(res_markov_alt, aes(x = final_size)) +
-	geom_histogram(binwidth = 1, boundary = 0.5, col = "black", fill = "white",
+	geom_histogram(binwidth = 3, boundary = 0.5, col = "black", fill = "white",
 								 aes(y = after_stat(density))) +
 	facet_grid(beta ~ gamma, labeller = "label_both") +
 	theme_minimal(base_size = 16) +
@@ -183,7 +183,7 @@ ggplot(res_markov_alt, aes(x = final_size)) +
 	)
 
 ggplot(res_markov_alt, aes(x = duration)) +
-	geom_histogram(binwidth = 1, boundary = 0.5, col = "black", fill = "white",
+	geom_histogram(binwidth = 3, boundary = 0.5, col = "black", fill = "white",
 								 aes(y = after_stat(density))) +
 	facet_grid(beta ~ gamma, labeller = "label_both") +
 	theme_minimal(base_size = 16) +
